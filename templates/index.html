@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 120vh;
+        }
+
+        .container {
+            max-width: 800px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .column {
+            flex: 1;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+
+        .left-column {
+            padding-right: 10px;
+        }
+
+        .right-column {
+            padding-left: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333333;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        form {
+            text-align: left;
+        }
+
+        label {
+            display: inline-block;
+            width: 120px;
+            margin-bottom: 8px;
+            font-size: 0.8em;
+        }
+
+        input,
+        select {
+            width: calc(100% - 140px);
+            padding: 6px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.8em;
+        }
+
+        input[type="submit"] {
+            background-color: #4caf50;
+            color: #fff;
+            cursor: pointer;
+            width: 95%;
+            padding: 8px;
+            font-size: 1em;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .result {
+            text-align: center;
+            margin-top: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(50%, -50%);
+        }
+
+        .glow-on-hover {
+            margin: auto;
+            transform: translate(50%, 0);
+            width: 50%;
+            height: 50px;
+            border: none;
+            outline: none;
+            color: #fff;
+            background: #111;
+            cursor: pointer;
+            position: relative;
+            z-index: 0;
+            border-radius: 10px;
+        }
+
+        .glow-on-hover:before {
+            content: '';
+            background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+            position: absolute;
+            top: -2px;
+            left:-2px;
+            background-size: 400%;
+            z-index: -1;
+            filter: blur(5px);
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            animation: glowing 20s linear infinite;
+            opacity: 0;
+            transition: opacity .3s ease-in-out;
+            border-radius: 10px;
+        }
+
+        .glow-on-hover:active {
+            color: #000
+        }
+
+        .glow-on-hover:active:after {
+            background: transparent;
+        }
+
+        .glow-on-hover:hover:before {
+            opacity: 1;
+        }
+
+        .glow-on-hover:after {
+            z-index: -1;
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            left: 0;
+            top: 0;
+            border-radius: 10px;
+        }
+
+        @keyframes glowing {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="column left-column">
+            <div class="tw">
+
+                <h1>Loan Approval Detection</h1><br><br>
+
+            </div>
+            <form method="POST" action="{{url_for('pred')}}">
+
+                <label for="no_of_dependents">Dependents:</label>
+                <input type="number" id="no_of_dependents" name="no_of_dependents" required>
+
+                <label for="education">Educated:</label>
+                <select id="education" name="education">
+                    <option value=1>True</option>
+                    <option value=0>False</option>
+                </select>
+
+                <label for="self_employed">Self Employed:</label>
+                <select id="self_employed" name="self_employed">
+                    <option value=1>True</option>
+                    <option value=0>False</option>
+                </select>
+
+                <label for="income_annum">Income:</label>
+                <input type="number" id="income_annum" name="income_annum" required>
+
+                <label for="loan_amount">Loan Amount:</label>
+                <input type="number" id="loan_amount" name="loan_amount" required>
+
+                <label for="loan_tenure">Loan Tenure:</label>
+                <input type="number" id="loan_tenure" name="loan_tenure" required>
+
+                <label for="cibil_score">CIBIL Score:</label>
+                <input type="number" id="cibil_score" name="cibil_score" required>
+
+                <label for="residential_asset_value">Residential Asset:</label>
+                <input type="number" id="residential_asset_value" name="residential_asset_value" required>
+
+                <label for="commercial_asset_value">Commercial Asset:</label>
+                <input type="number" id="commercial_asset_value" name="commercial_asset_value" required>
+
+                <label for="luxury_asset_value">Luxury Asset:</label>
+                <input type="number" id="luxury_asset_value" name="luxury_asset_value" required>
+
+                <label for="bank_assets_value">Bank Assets:</label>
+                <input type="number" id="bank_assets_value" name="bank_assets_value" required>
+
+                <br><br><br>
+                <button class="glow-on-hover"  value="Predict"> PREDICT </button>
+            </form>
+        </div>
+
+    </div>
+</body>
+
+</html>
