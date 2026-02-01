@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Input Section -->
+    <div class="col-lg-7">
+        <div class="card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="mb-0">Financial Assessment</h3>
+                <button type="button" class="btn btn-sm btn-outline-warning" onclick="autofill()">
+                    <i class="bi bi-shuffle"></i> Randomize Applicant
+                </button>
+            </div>
+            
+            <form id="predictionForm">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Dependents</label>
+                        <input type="number" class="form-control auto-trigger" name="no_of_dependents" id="no_of_dependents" min="0" max="5">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Education</label>
+                        <select class="form-select auto-trigger" name="education" id="education">
+                            <option value="1">Graduate</option>
+                            <option value="0">Not Graduate</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Self Employed</label>
+                        <select class="form-select auto-trigger" name="self_employed" id="self_employed">
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Annual Income (₹)</label>
+                        <input type="number" class="form-control auto-trigger" name="income_annum" id="income_annum">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Loan Amount (₹)</label>
+                        <input type="number" class="form-control auto-trigger" name="loan_amount" id="loan_amount">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tenure (Years)</label>
+                        <input type="number" class="form-control auto-trigger" name="loan_tenure" id="loan_tenure">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">CIBIL Score</label>
+                        <input type="number" class="form-control auto-trigger" name="cibil_score" id="cibil_score">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Residential Asset (₹)</label>
+                        <input type="number" class="form-control auto-trigger" name="residential_asset_value" id="residential_asset_value">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Commercial Asset (₹)</label>
+                        <input type="number" class="form-control auto-trigger" name="commercial_asset_value" id="commercial_asset_value">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Luxury Asset (₹)</label>
+                        <input type="number" class="form-control auto-trigger" name="luxury_asset_value" id="luxury_asset_value">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Bank Assets (₹)</label>
+                        <input type="number" class="form-control auto-trigger" name="bank_assets_value" id="bank_assets_value">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="col-lg-5">
+        <div class="card p-4 h-100 bg-dark text-white border-0 shadow-lg">
+            <h3 class="mb-4 text-center text-warning"><i class="bi bi-shield-exclamation me-2"></i>Default Risk Analysis</h3>
+            
+            <div id="loadingOverlay" class="text-center py-5 d-none">
+                <div class="spinner-border text-warning" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-warning">Stress testing...</p>
+            </div>
+
+            <div id="resultContent">
+                <div class="text-center mb-5">
+                    <p class="text-uppercase small tracking-widest opacity-75">Probability of Default (PD)</p>
+                    <h1 id="defaultProb" class="display-2 fw-bold mb-0">--%</h1>
+                    <div id="riskLevelBadge" class="badge mt-2 fs-6">Calculating...</div>
+                </div>
+
+                <div class="mb-5">
+                    <p class="small text-center opacity-75">Relative Risk Indicator</p>
+                    <div class="progress" style="height: 12px; background: #333;">
+                        <div id="pdBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1 small opacity-50">
+                        <span>Safe</span>
+                        <span>Moderate</span>
+                        <span>High Risk</span>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="p-3 bg-secondary bg-opacity-10 rounded border-start border-warning border-4">
+                            <h6 class="opacity-75 mb-2">Technical Summary</h6>
+                            <p id="technicalDesc" class="small mb-0">
+                                Enter applicant details to generate a multi-model default risk assessment.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-4">
+                    <div class="p-3 rounded bg-warning bg-opacity-10 border border-warning border-opacity-25">
+                        <p class="small mb-0 text-warning">
+                            <i class="bi bi-info-circle me-2"></i>
+                            This prediction estimates the likelihood of repayment failure based on historical patterns.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function autofill() {
+        const fields = {
+            'no_of_dependents': () => getRandomInt(0, 5),
+            'education': () => getRandomInt(0, 1),
+            'self_employed': () => getRandomInt(0, 1),
+            'income_annum': () => getRandomInt(500000, 9500000),
+            'loan_tenure': () => getRandomInt(2, 20),
+            'cibil_score': () => getRandomInt(300, 900),
+            'residential_asset_value': () => getRandomInt(1000000, 25000000),
+            'commercial_asset_value': () => getRandomInt(500000, 15000000),
+            'luxury_asset_value': () => getRandomInt(1000000, 35000000),
+            'bank_assets_value': () => getRandomInt(200000, 12000000)
+        };
+
+        for (const [id, generator] of Object.entries(fields)) {
+            document.getElementById(id).value = generator();
+        }
+
+        const income = parseInt(document.getElementById('income_annum').value);
+        document.getElementById('loan_amount').value = getRandomInt(income * 2, income * 5); // Default is more likely with high loan/income
+
+        updatePrediction();
+    }
+
+    async function updatePrediction() {
+        const form = document.getElementById('predictionForm');
+        const formData = new FormData(form);
+        
+        for (let [key, value] of formData.entries()) {
+            if (!value) return;
+        }
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const resultContent = document.getElementById('resultContent');
+        
+        loadingOverlay.classList.remove('d-none');
+        resultContent.style.opacity = '0.5';
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.error) throw new Error(data.error);
+
+            const pd = data.default_probability;
+            document.getElementById('defaultProb').innerText = pd + '%';
+            
+            const pdBar = document.getElementById('pdBar');
+            pdBar.style.width = pd + '%';
+            
+            const badge = document.getElementById('riskLevelBadge');
+            const desc = document.getElementById('technicalDesc');
+
+            if (pd < 20) {
+                badge.className = "badge mt-2 fs-6 bg-success";
+                badge.innerText = "Minimal Risk";
+                pdBar.className = "progress-bar bg-success";
+                desc.innerText = "Excellent financial health. The likelihood of default is extremely low based on high CIBIL and asset ratios.";
+            } else if (pd < 40) {
+                badge.className = "badge mt-2 fs-6 bg-info";
+                badge.innerText = "Low Risk";
+                pdBar.className = "progress-bar bg-info";
+                desc.innerText = "Stable profile. Standard risk parameters observed. Repayment is highly probable.";
+            } else if (pd < 70) {
+                badge.className = "badge mt-2 fs-6 bg-warning text-dark";
+                badge.innerText = "Moderate Risk";
+                pdBar.className = "progress-bar bg-warning";
+                desc.innerText = "Significant risk detected. High debt-to-income ratio or moderate CIBIL score suggests cautious lending.";
+            } else {
+                badge.className = "badge mt-2 fs-6 bg-danger";
+                badge.innerText = "Critical Risk";
+                pdBar.className = "progress-bar bg-danger";
+                desc.innerText = "High default probability. Multiple warning signs in asset coverage and credit history.";
+            }
+
+        } catch (error) {
+            console.error('Prediction error:', error);
+        } finally {
+            loadingOverlay.classList.add('d-none');
+            resultContent.style.opacity = '1';
+        }
+    }
+
+    document.querySelectorAll('.auto-trigger').forEach(input => {
+        input.addEventListener('input', () => {
+            clearTimeout(window.predictionTimer);
+            window.predictionTimer = setTimeout(updatePrediction, 300);
+        });
+    });
+
+    window.onload = autofill;
+</script>
+<style>
+    .tracking-widest { letter-spacing: 0.2em; }
+    #resultContent { transition: opacity 0.3s ease; }
+    .card { transition: all 0.3s ease; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05) !important; }
+    .bg-dark { background: #1a1c1e !important; }
+</style>
+{% endblock %}

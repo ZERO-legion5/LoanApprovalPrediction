@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Top Stats Cards -->
+    <div class="col-md-3">
+        <div class="card p-3 text-center border-0 shadow-sm">
+            <h6 class="text-muted small text-uppercase">Total Applications</h6>
+            <h2 class="fw-bold mb-0">{{ stats.total_loans }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 text-center border-0 shadow-sm border-start border-success border-4">
+            <h6 class="text-muted small text-uppercase">Approved</h6>
+            <h2 class="fw-bold text-success mb-0">{{ stats.approved_count }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 text-center border-0 shadow-sm border-start border-danger border-4">
+            <h6 class="text-muted small text-uppercase">Rejected</h6>
+            <h2 class="fw-bold text-danger mb-0">{{ stats.rejected_count }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 text-center border-0 shadow-sm">
+            <h6 class="text-muted small text-uppercase">Avg CIBIL Score</h6>
+            <h2 class="fw-bold text-primary mb-0">{{ stats.avg_cibil }}</h2>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="col-lg-8">
+        <div class="card p-4 border-0 shadow-sm h-100">
+            <h5 class="mb-4 fw-bold">Education vs Approval Status</h5>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="eduChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card p-4 border-0 shadow-sm h-100">
+            <h5 class="mb-4 fw-bold">CIBIL Score Distribution</h5>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="cibilChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Averages -->
+    <div class="col-md-6">
+        <div class="card p-4 border-0 shadow-sm">
+            <h5 class="mb-3 fw-bold">Portfolio Overview</h5>
+            <div class="list-group list-group-flush">
+                <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
+                    <span>Average Annual Income</span>
+                    <span class="fw-bold text-primary">₹ {{ "{:,.2f}".format(stats.avg_income) }}</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
+                    <span>Average Loan Amount</span>
+                    <span class="fw-bold text-primary">₹ {{ "{:,.2f}".format(stats.avg_loan) }}</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 border-0">
+                    <span>Loan-to-Income Ratio</span>
+                    <span class="fw-bold text-dark">{{ (stats.avg_loan / stats.avg_income)|round(2) }}x</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card p-4 border-0 shadow-sm bg-primary text-white">
+            <h5 class="mb-3 fw-bold">Key Insight</h5>
+            <p class="mb-0 opacity-75">
+                The current dataset shows an approval rate of <b>{{ ((stats.approved_count / stats.total_loans) * 100)|round(1) }}%</b>. 
+                Higher education levels and CIBIL scores above 600 are the most significant positive predictors in the current portfolio.
+            </p>
+            <div class="mt-4">
+                <div class="small opacity-75 mb-1">Portfolio Health</div>
+                <div class="progress bg-white bg-opacity-25" style="height: 8px;">
+                    <div class="progress-bar bg-white" role="progressbar" style="width: {{ (stats.approved_count / stats.total_loans) * 100 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Education Chart
+    const eduCtx = document.getElementById('eduChart').getContext('2d');
+    new Chart(eduCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Graduate', 'Not Graduate'],
+            datasets: [{
+                label: 'Approved',
+                data: [
+                    {{ edu_stats[' Graduate'][' Approved'] if ' Graduate' in edu_stats else 0 }},
+                    {{ edu_stats[' Not Graduate'][' Approved'] if ' Not Graduate' in edu_stats else 0 }}
+                ],
+                backgroundColor: '#198754'
+            }, {
+                label: 'Rejected',
+                data: [
+                    {{ edu_stats[' Graduate'][' Rejected'] if ' Graduate' in edu_stats else 0 }},
+                    {{ edu_stats[' Not Graduate'][' Rejected'] if ' Not Graduate' in edu_stats else 0 }}
+                ],
+                backgroundColor: '#dc3545'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, stacked: true },
+                x: { stacked: true }
+            }
+        }
+    });
+
+    // CIBIL Distribution Chart
+    const cibilCtx = document.getElementById('cibilChart').getContext('2d');
+    new Chart(cibilCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ cibil_dist.keys()|list|tojson }},
+            datasets: [{
+                data: {{ cibil_dist.values()|list|tojson }},
+                backgroundColor: ['#dc3545', '#ffc107', '#0dcaf0', '#198754']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+</script>
+{% endblock %}
